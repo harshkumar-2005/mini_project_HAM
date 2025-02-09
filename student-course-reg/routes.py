@@ -30,3 +30,17 @@ def enroll():
     db.session.add(enrollment)
     db.session.commit()
     return jsonify({"message": "Enrollment successful!"})
+
+@routes_bp.route('/enrollments', methods=['GET'])
+def get_enrollments():
+    enrollments = Enrollment.query.all()  # Fetch enrollments
+    result = [{"id": e.id, "student_id": e.student_id, "course_id": e.course_id} for e in enrollments]
+    return jsonify(result), 200
+
+@routes_bp.route('/courses', methods=['GET'])
+def get_courses():
+    return jsonify({"message": "List of courses"}), 200
+
+@routes_bp.route('/students', methods=['GET'])
+def get_students():
+    return jsonify({"message": "List of students"}), 200
