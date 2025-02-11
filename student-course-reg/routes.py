@@ -39,10 +39,19 @@ def add_course():
 @routes_bp.route("/enroll", methods=["POST"])
 def enroll():
     data = request.get_json()
-    enrollment = Enrollment(user_id=data["user_id"], course_id=data["course_id"])  # FIXED
+
+    print("Received data:", data)  # Debugging statement
+
+    if not data or "user_id" not in data or "course_id" not in data:
+        return jsonify({"error": "Missing user_id or course_id"}), 400  
+
+    enrollment = Enrollment(user_id=data["user_id"], course_id=data["course_id"])
     db.session.add(enrollment)
     db.session.commit()
+    
     return jsonify({"message": "Enrollment successful!"})
+
+
 
 
 @routes_bp.route('/enrollments', methods=['GET'])
