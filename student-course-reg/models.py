@@ -6,9 +6,9 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), unique=True, nullable=False)
-    role = db.Column(db.String(20), nullable=False, default="student")
-    
-    enrollments = db.relationship("Enrollment", back_populates="user")  #  Relationship added
+    password = db.Column(db.String(255), nullable=False)  # Store hashed passwords
+    role = db.Column(db.String(10), nullable=False)  # "admin" or "student"
+
 
 class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
