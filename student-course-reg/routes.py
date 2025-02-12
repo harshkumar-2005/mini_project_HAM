@@ -5,8 +5,10 @@ from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_requir
 from werkzeug.security import check_password_hash, generate_password_hash
 from auth_utils import role_required  # Import from auth_utils
 
-routes_bp = Blueprint("routes", __name__)
+# Register Blueprint
+routes_bp = Blueprint("student_routes", __name__)
 
+# Home Route
 @routes_bp.route("/")
 def home():
     return jsonify({"message": "Welcome to the Student Course Registration System!"})
@@ -14,12 +16,13 @@ def home():
 
 #  Admin-only route
 @routes_bp.route("/admin_only", methods=["GET"])
+@jwt_required()
 @role_required("admin")
 def admin_dashboard():
     return jsonify({"message": "Welcome Admin!"})
 
 
-#  Add Student (Hash Password)
+#  Add Student (with Password Hashing)
 @routes_bp.route("/add_student", methods=["POST"])
 def add_student():
     data = request.get_json()
@@ -29,7 +32,7 @@ def add_student():
         return jsonify({"error": "Email already exists. Please use a different email."}), 400
 
     try:
-        hashed_password = generate_password_hash(data["password"])  # ✅ Hash Password
+        hashed_password = generate_password_hash(data["password"])  #  Hash Password
         new_student = User(name=data["name"], email=data["email"], password=hashed_password, role="student")
         db.session.add(new_student)
         db.session.commit()
@@ -41,6 +44,7 @@ def add_student():
 
 #  Admin can add courses
 @routes_bp.route("/add_course", methods=["POST"])
+@jwt_required()
 @role_required("admin")
 def add_course():
     data = request.get_json()
@@ -50,8 +54,9 @@ def add_course():
     return jsonify({"message": "Course added successfully!"}), 201
 
 
-#  Student Enrollment Route
+# Student Enrollment Route
 @routes_bp.route("/enroll", methods=["POST"])
+@jwt_required()
 @role_required("student")
 def enroll():
     data = request.get_json()
@@ -68,6 +73,7 @@ def enroll():
 
 #  Admin can view all enrollments
 @routes_bp.route('/enrollments', methods=['GET'])
+@jwt_required()
 @role_required("admin")
 def get_enrollments():
     enrollments = Enrollment.query.all()
@@ -100,18 +106,19 @@ def get_students():
     return jsonify(result), 200
 
 
-#  Login Route
-@routes_bp.route("/login", methods=["POST"])
+#  Login Route (Corrected with JWT Token Generation)
+@routes_bp.route('/login', methods=['POST'])
 def login():
-    data = request.get_json()
-    email = data.get("email")
+    data = request.json
+    username = data.get("username")
     password = data.get("password")
 
-    user = User.query.filter_by(email=email).first()
-    
-    if not user or not check_password_hash(user.password, password):
-        return jsonify({"error": "Invalid email or password"}), 401
-    
-    access_token = create_access_token(identity={"id": user.id, "role": user.role})
-    
-    return jsonify({"access_token": access_token, "role": user.role}), 200
+    #  Query user from database
+    user = User.query.filter_by(email=username).first()
+
+    #  Validate password
+    if user and check_password_hash(user.password, password):
+        token = create_access_token(identity={"id": user.id, "role": user.role})
+        return jsonify({"token": token}), 200
+    else:
+        return jsonify({"error": "Invalid username or password"}), 401

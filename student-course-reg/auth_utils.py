@@ -14,20 +14,29 @@ def role_required(required_role):
             if not auth_header:
                 return jsonify({"error": "Authorization token is missing"}), 401
 
-            try:
-                token = auth_header.split(" ")[1]
-                decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
-                user_role = decoded_token.get("role")
+            parts = auth_header.split(" ")
 
+            if len(parts) != 2 or parts[0] != "Bearer":
+                return jsonify({"error": "Invalid token format"}), 401
+
+            token = parts[1]
+            print("Received Token:", token)  # Debugging Line
+
+            try:
+                decoded_token = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
+                print("Decoded Token:", decoded_token)  #  Debugging Line
+
+                # Corrected role extraction
+                user_role = decoded_token.get("sub", {}).get("role")
                 if user_role != required_role:
                     return jsonify({"error": "Permission denied"}), 403
+
+                return f(*args, **kwargs)
 
             except jwt.ExpiredSignatureError:
                 return jsonify({"error": "Token has expired"}), 401
             except jwt.InvalidTokenError:
                 return jsonify({"error": "Invalid token"}), 401
-
-            return f(*args, **kwargs)
 
         return decorated_function
     return decorator

@@ -8,6 +8,7 @@ from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
 app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this in production
+app.register_blueprint(routes_bp, url_prefix="/api")  #  Register the Blueprint
 jwt = JWTManager(app)
 
 #  Database Configuration (Correct connection string format)
