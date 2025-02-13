@@ -1,20 +1,18 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Course, Enrollment
 from sqlalchemy.exc import IntegrityError
-from flask_jwt_extended import create_access_token, get_jwt_identity, jwt_required
+from flask_jwt_extended import create_access_token, jwt_required
 from werkzeug.security import check_password_hash, generate_password_hash
-from auth_utils import role_required  # Import from auth_utils
+from auth_utils import role_required
 
-# Register Blueprint
-routes_bp = Blueprint("student_routes", __name__)
+#  Change Blueprint name from "student_routes" to "routes_bp"
+routes_bp = Blueprint("student_routes_bp", __name__)  # Unique name
 
-# Home Route
 @routes_bp.route("/")
 def home():
     return jsonify({"message": "Welcome to the Student Course Registration System!"})
 
-
-#  Admin-only route
+# Admin-only route
 @routes_bp.route("/admin_only", methods=["GET"])
 @jwt_required()
 @role_required("admin")
@@ -54,7 +52,7 @@ def add_course():
     return jsonify({"message": "Course added successfully!"}), 201
 
 
-# Student Enrollment Route
+#  Student Enrollment Route
 @routes_bp.route("/enroll", methods=["POST"])
 @jwt_required()
 @role_required("student")
@@ -113,7 +111,7 @@ def login():
     username = data.get("username")
     password = data.get("password")
 
-    #  Query user from database
+    # Query user from database
     user = User.query.filter_by(email=username).first()
 
     #  Validate password

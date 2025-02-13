@@ -7,20 +7,19 @@ from models import db  # Import database
 from flask_jwt_extended import JWTManager
 
 app = Flask(__name__)
-app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this in production
-app.register_blueprint(routes_bp, url_prefix="/api")  #  Register the Blueprint
-jwt = JWTManager(app)
 
-#  Database Configuration (Correct connection string format)
+
+app.config["JWT_SECRET_KEY"] = "your_secret_key"  # Change this in production
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:%40Harsh1243@localhost/student_course_reg'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+
 
 #  Initialize database with app
 db.init_app(app)
 migrate = Migrate(app, db)  # Initialize Flask-Migrate
-
+jwt = JWTManager(app)
 # Register the Blueprint
-app.register_blueprint(routes_bp)
+app.register_blueprint(routes_bp)  # No prefix
 
 # Ensure database tables are created (Run this before first use)
 with app.app_context():
