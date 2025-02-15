@@ -3,6 +3,11 @@
 A simple **Student Course Registration System** built using **Flask** and **MySQL**.  
 It supports **Role-Based Access Control (RBAC)** with authentication and **email notifications** for enrollment updates.  
 
+### ✅ First Steps: 
+```
+   git clone https://github.com/harshkumar-2005/mini_project_HAM.git
+```
+
 ---
 
 ## 📌 Features
@@ -151,11 +156,6 @@ Feel free to open an issue or submit a pull request.
 <h6>For any questions, feel free to reach out. 😊</h6>
 
 ---
-
-### ✅ Next Steps: 
-```
-   git clone https://github.com/harshkumar-2005/mini_project_HAM.git
-```
 
 
 
