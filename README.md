@@ -81,7 +81,7 @@ python app.py
 <h2>The server should now be running on 
   
   ```sh
-  http://127.0.0.1:5000/</h2>
+  http://127.0.0.1:5000/
 ```
 
 <h3>You can test the API using Postman or the provided test_api.py script.</h3>
