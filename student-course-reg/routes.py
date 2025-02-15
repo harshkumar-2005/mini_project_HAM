@@ -44,15 +44,19 @@ def add_student():
 @role_required("admin")
 def add_course():
     data = request.get_json()
-    print("📌 DEBUG: Received Course Data:", data)  # ✅ Print request data
+    print(" DEBUG: Received Course Data:", data)  # Debugging Output
 
-    if not data or "name" not in data or "description" not in data:
+    if not data:
+        return jsonify({"error": "No data received. Make sure you're sending JSON."}), 422
+
+    if "name" not in data or "description" not in data:
         return jsonify({"error": "Missing required fields: name, description"}), 422
 
     new_course = Course(name=data["name"], description=data["description"])
     db.session.add(new_course)
     db.session.commit()
     return jsonify({"message": "Course added successfully!"}), 201
+
 
 #  Student Enrollment Route
 @routes_bp.route('/enroll', methods=['POST'])
