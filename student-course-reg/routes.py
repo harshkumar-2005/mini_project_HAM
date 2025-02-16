@@ -43,19 +43,32 @@ def add_student():
 @jwt_required()
 @role_required("admin")
 def add_course():
+    print(" DEBUG: Inside add_course route")  # Confirm function is being called
+
     data = request.get_json()
-    print(" DEBUG: Received Course Data:", data)  # Debugging Output
+    print(" DEBUG: Raw Request Data:", request.data)  # Show raw request content
+    print(" DEBUG: Parsed JSON Data:", data)  # Show parsed JSON
 
     if not data:
+        print(" ERROR: No JSON data received!")
         return jsonify({"error": "No data received. Make sure you're sending JSON."}), 422
 
     if "name" not in data or "description" not in data:
+        print(" ERROR: Missing required fields in request")
         return jsonify({"error": "Missing required fields: name, description"}), 422
 
+    print(" DEBUG: Adding new course:", data["name"])
     new_course = Course(name=data["name"], description=data["description"])
     db.session.add(new_course)
-    db.session.commit()
-    return jsonify({"message": "Course added successfully!"}), 201
+
+    try:
+        db.session.commit()
+        print(" ✅ Course added successfully!")
+        return jsonify({"message": "Course added successfully!"}), 201
+    except Exception as e:
+        db.session.rollback()
+        print(" ❌ ERROR: Database commit failed -", str(e))
+        return jsonify({"error": "Database error occurred", "details": str(e)}), 500
 
 
 #  Student Enrollment Route
@@ -88,18 +101,26 @@ def enroll_student():
 @jwt_required()
 @role_required("admin")
 def get_enrollments():
+    print(" DEBUG: Inside get_enrollments route")  # Confirm function is being called
+
     enrollments = Enrollment.query.all()
+    if not enrollments:
+        print(" DEBUG: No enrollments found")
+        return jsonify({"message": "No enrollments available"}), 200
+
     result = [
         {
             "id": e.id,
             "user_id": e.user_id,
-            "user_name": e.user.name,
+            "user_name": getattr(e.user, "name", "Unknown User"),
             "course_id": e.course_id,
-            "course_name": e.course.name
+            "course_name": getattr(e.course, "name", "Unknown Course")
         }
         for e in enrollments
     ]
+    print(" DEBUG: Enrollment Data:", result)  # Log data before returning
     return jsonify(result), 200
+
 
 #  Get All Courses
 @routes_bp.route('/courses', methods=['GET'])
@@ -136,3 +157,15 @@ def login():
     print(" Password matches!")  # Debugging
     token = create_access_token(identity={"id": user.id, "role": user.role})  # Generate JWT
     return jsonify({"token": token, "role": user.role}), 200
+
+
+@routes_bp.route("/debug_request", methods=["POST"])
+def debug_request():
+    print(" DEBUG: Raw Request Data:", request.data)  # Print raw request body
+    data = request.get_json()
+    print(" DEBUG: Parsed JSON Data:", data)  # Print parsed JSON
+
+    if not data:
+        return jsonify({"error": "No JSON data received"}), 422
+
+    return jsonify({"message": "JSON received successfully!", "data": data}), 200
