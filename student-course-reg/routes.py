@@ -15,12 +15,12 @@ def home():
 @routes_bp.route('/enroll', methods=['POST'])
 @jwt_required()
 def enroll():
-    user_id = get_jwt_identity()
+    student_id = get_jwt_identity()
     course_id = request.json.get('course_id')
     
     # Check if already enrolled
     existing_enrollment = Enrollment.query.filter_by(
-        user_id=user_id, 
+        student_id=student_id, 
         course_id=course_id
     ).first()
     
@@ -34,7 +34,7 @@ def enroll():
     
     if course.prerequisite_id:
         has_prerequisite = Enrollment.query.filter_by(
-            user_id=user_id, 
+            student_id=student_id, 
             course_id=course.prerequisite_id
         ).scalar() is not None
         
@@ -42,7 +42,7 @@ def enroll():
             return jsonify({'error': 'Prerequisite not met'}), 400
     
     try:
-        enrollment = Enrollment(user_id=user_id, course_id=course_id)
+        enrollment = Enrollment(student_id=student_id, course_id=course_id)
         db.session.add(enrollment)
         db.session.commit()
         return jsonify({'message': 'Enrolled successfully'}), 201
@@ -53,7 +53,7 @@ def enroll():
 @routes_bp.route('/bulk-enroll', methods=['POST'])
 @jwt_required()
 def bulk_enroll():
-    user_id = get_jwt_identity()
+    student_id = get_jwt_identity()
     course_ids = request.json.get('course_ids', [])
     
     if not course_ids:
@@ -67,7 +67,7 @@ def bulk_enroll():
     existing_enrollments = set(
         e[0] for e in db.session.query(Enrollment.course_id).filter(
             and_(
-                Enrollment.user_id == user_id,
+                Enrollment.student_id == student_id,
                 Enrollment.course_id.in_(course_ids)
             )
         ).all()
@@ -78,7 +78,7 @@ def bulk_enroll():
     prereq_enrollments = set(
         e[0] for e in db.session.query(Enrollment.course_id).filter(
             and_(
-                Enrollment.user_id == user_id,
+                Enrollment.student_id == student_id,
                 Enrollment.course_id.in_([c.prerequisite_id for c in courses if c.prerequisite_id])
             )
         ).all()
@@ -103,7 +103,7 @@ def bulk_enroll():
             continue
         
         enrollments_to_add.append(
-            Enrollment(user_id=user_id, course_id=course_id)
+            Enrollment(student_id=student_id, course_id=course_id)
         )
         enrolled_courses.append(course_id)
     
