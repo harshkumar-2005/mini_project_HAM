@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Dashboard</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <nav class="navbar">
+        <img src="assets/logo.png" alt="Logo" class="nav-logo">
+        <button id="logoutBtn" class="btn">Logout</button>
+    </nav>
+    <div class="container">
+        <h1>Student Dashboard</h1>
+        <div class="courses-container">
+            <h2>Available Courses</h2>
+            <div id="coursesList"></div>
+            <h2>My Enrollments</h2>
+            <div id="enrollmentsList"></div>
+        </div>
+    </div>
+    <script src="js/auth.js"></script>
+    <script src="js/api.js"></script>
+    <script src="js/student.js"></script>
+</body>
+</html> 
