@@ -8,14 +8,6 @@ It supports **Role-Based Access Control (RBAC)** with authentication and **email
    git clone https://github.com/harshkumar-2005/mini_project_HAM.git
 ```
 
-### ✅ Second Steps:
-<h3>Run this in terminal</h3>
-
-```
-pip install -r requirements.txt
-
-```
-
 ---
 
 ## 📌 Features
