@@ -109,37 +109,6 @@ mini_project_HAM/
 │── README.md
 └── .gitignore
 ```
-### 📝 Creating requirements.txt
-<p>To ensure that your project runs on any device, generate a requirements.txt file listing all dependencies.
-Run the following command inside your virtual environment:</p>
-
-```sh
-pip freeze > requirements.txt
-```
-<h3>Then, commit and push it to GitHub:</h3>
-
-```sh
-git add requirements.txt
-git commit -m "Added requirements.txt"
-git push origin main  # or your current branch
-```
-
-### 🛑 Important: Add .gitignore
-<p>To prevent unnecessary files from being pushed to GitHub, create a .gitignore file in the root directory and add:</p>
-
-```sh
-venv/
-__pycache__/
-.env
-migrations/
-```
-<p>Then commit it:</p>
-
-```sh
-git add .gitignore
-git commit -m "Added .gitignore"
-git push origin main
-```
 
 ### 🤝 Contributing
 <p>
