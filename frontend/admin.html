@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="api.js"></script>
+    <script src="auth.js"></script>
+    <script src="admin.js" defer></script>
+</head>
+<body>
+    <header>
+        <h1>Admin Dashboard</h1>
+        <button id="logoutBtn" class="btn logout">Logout</button>
+    </header>
+
+    <main>
+        <section id="add-course-section">
+            <h2>Add New Course</h2>
+            <form id="addCourseForm">
+                <input type="text" id="courseName" placeholder="Course Name" required>
+                <input type="text" id="courseDescription" placeholder="Course Description">
+                <input type="number" id="prerequisiteId" placeholder="Prerequisite Course ID (Optional)">
+                <button type="submit" class="btn">Add Course</button>
+            </form>
+        </section>
+
+        <section id="courses-section">
+            <h2>Available Courses</h2>
+            <div id="coursesList"></div>
+        </section>
+
+        <div id="notification" class="notification"></div>
+    </main>
+
+    <script>
+        checkAuth();  // Ensure only authenticated users can access
+    </script>
+</body>
+</html>
