@@ -119,4 +119,96 @@ def bulk_enroll():
         db.session.rollback()
         return jsonify({'error': 'Bulk enrollment failed'}), 400
 
-        
+@routes_bp.route('/auth/login', methods=['POST'])
+def login():
+    data = request.get_json()
+    email = data.get('email')
+    password = data.get('password')
+    
+    user = User.query.filter_by(email=email).first()
+    
+    if user and check_password_hash(user.password, password):
+        access_token = create_access_token(identity=user.id)
+        return jsonify({
+            'token': access_token,
+            'role': user.role,
+            'user_id': user.id
+        }), 200
+    
+    return jsonify({'error': 'Invalid credentials'}), 401
+
+@routes_bp.route('/courses', methods=['GET'])
+@jwt_required()
+def get_courses():
+    courses = Course.query.all()
+    return jsonify([{
+        'id': course.id,
+        'name': course.name,
+        'description': course.description,
+        'prerequisite_id': course.prerequisite_id
+    } for course in courses]), 200
+
+@routes_bp.route('/student/enrollments', methods=['GET'])
+@jwt_required()
+def get_student_enrollments():
+    student_id = get_jwt_identity()
+    enrollments = Enrollment.query.filter_by(user_id=student_id).all()
+    
+    return jsonify([{
+        'id': enrollment.id,
+        'course': {
+            'id': enrollment.course.id,
+            'name': enrollment.course.name,
+            'description': enrollment.course.description
+        }
+    } for enrollment in enrollments]), 200
+
+@routes_bp.route('/add_student', methods=['POST'])
+def add_student():
+    data = request.get_json()
+    name = data.get('name')
+    email = data.get('email')
+    password = generate_password_hash(data.get('password'))
+    role = 'student'
+
+    if User.query.filter_by(email=email).first():
+        return jsonify({'error': 'Email already exists'}), 400
+
+    new_student = User(name=name, email=email, password=password, role=role)
+    db.session.add(new_student)
+    db.session.commit()
+
+    return jsonify({'message': 'Student added successfully'}), 201
+
+@routes_bp.route('/students', methods=['GET'])
+def get_students():
+    students = User.query.filter_by(role='student').all()
+    return jsonify([{'id': s.id, 'name': s.name, 'email': s.email} for s in students]), 200
+
+@routes_bp.route('/add_course', methods=['POST'])
+@jwt_required()
+def add_course():
+    user_id = get_jwt_identity()
+    user = User.query.get(user_id)
+
+    if not user or user.role != 'admin':
+        return jsonify({"error": "Unauthorized"}), 403
+    
+    print("Registered Routes:")
+    for rule in routes_bp.url_map.iter_rules():
+        print(rule)
+
+
+    data = request.get_json()
+    name = data.get("name")
+    description = data.get("description")
+    prerequisite_id = data.get("prerequisite_id")
+
+    if not name:
+        return jsonify({"error": "Course name is required"}), 400
+
+    new_course = Course(name=name, description=description, prerequisite_id=prerequisite_id)
+    db.session.add(new_course)
+    db.session.commit()
+
+    return jsonify({"message": "Course added successfully!"}), 201

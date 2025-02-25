@@ -7,24 +7,31 @@ async function apiRequest(endpoint, options = {}) {
         ...(token && { 'Authorization': `Bearer ${token}` })
     };
 
-    const response = await fetch(`${API_BASE_URL}${endpoint}`, {
-        ...options,
-        headers: {
-            ...defaultHeaders,
-            ...options.headers
+    try {
+        const response = await fetch(`${API_BASE_URL}${endpoint}`, {
+            ...options,
+            headers: {
+                ...defaultHeaders,
+                ...options.headers
+            }
+        });
+
+        const data = await response.json();
+        
+        if (!response.ok) {
+            throw new Error(data.error || `API Error: ${response.statusText}`);
         }
-    });
 
-    if (!response.ok) {
-        throw new Error(`API Error: ${response.statusText}`);
+        return data;
+    } catch (error) {
+        console.error('API Request failed:', error);
+        throw error;
     }
-
-    return response.json();
 }
 
 const api = {
     login: (email, password) => 
-        apiRequest('/login', {
+        apiRequest('/auth/login', {
             method: 'POST',
             body: JSON.stringify({ email, password })
         }),
@@ -35,13 +42,19 @@ const api = {
             body: JSON.stringify({ course_id: courseId })
         }),
     
+    bulkEnroll: (courseIds) =>
+        apiRequest('/bulk-enroll', {
+            method: 'POST',
+            body: JSON.stringify({ course_ids: courseIds })
+        }),
+    
     getCourses: () =>
         apiRequest('/courses', {
             method: 'GET'
         }),
     
     getEnrollments: () =>
-        apiRequest('/enrollments', {
+        apiRequest('/student/enrollments', {
             method: 'GET'
         })
 }; 

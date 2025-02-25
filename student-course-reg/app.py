@@ -41,4 +41,5 @@ def serve_react_app(path):
 
 #  Run Flask App
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=True, threaded=False)  # Ensure single-threaded execution to prevent daemon thread issues
+
