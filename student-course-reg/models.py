@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 
-#  Define the db instance once and use it in app.py
+# Define the db instance once and use it in app.py
 db = SQLAlchemy()
 
 class User(db.Model):
@@ -22,6 +22,7 @@ class Course(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(100), nullable=False)
     description = db.Column(db.String(255), nullable=True)
+    
     # Add prerequisite relationship
     prerequisite_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=True)
     prerequisite = db.relationship('Course', remote_side=[id], backref='dependent_courses')
@@ -36,11 +37,10 @@ class Enrollment(db.Model):
     course_id = db.Column(db.Integer, db.ForeignKey('courses.id'), nullable=False)
     subject = db.Column(db.String(100), nullable=True)
 
-    # Define relationships (optional)
+    # Define relationships
     user = db.relationship('User', backref='enrollments')
     course = db.relationship('Course', backref='enrollments')
     
     def __repr__(self):
         return f'<Enrollment {self.user_id}:{self.course_id}>'
-
-
+    
