@@ -70,18 +70,19 @@ body {
     align-items: center;
     justify-content: center;
     min-height: 100vh;
-    padding: 2rem;
+    padding: 1rem;
     background-color: var(--background-color);
+    margin: 0 auto;
 }
 
 .login-box {
     background: var(--card-background);
-    padding: 3rem;
+    padding: clamp(1.5rem, 5vw, 3rem);
     border-radius: 20px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
-    width: 100%;
-    max-width: 400px;
+    width: min(90%, 400px);
     text-align: center;
+    margin: auto;
 }
 
 .login-box h2 {
@@ -94,11 +95,15 @@ body {
     display: flex;
     flex-direction: column;
     gap: 1.5rem;
+    align-items: center;
+    width: 100%;
 }
 
 .input-group {
     position: relative;
     width: 100%;
+    max-width: 350px;
+    margin: 0 auto;
 }
 
 .input-group input {
@@ -243,10 +248,11 @@ body {
     }
 }
 
-/* Responsive Design */
+/* Enhanced Responsive Design */
 @media (max-width: 480px) {
     .login-box {
-        padding: 2rem;
+        padding: 1.5rem;
+        width: 95%;
     }
     
     .input-group input {
@@ -255,7 +261,28 @@ body {
     }
     
     .login-box h2 {
-        font-size: 1.5rem;
+        font-size: clamp(1.2rem, 4vw, 1.8rem);
+        margin-bottom: 1.5rem;
+    }
+
+    .logo {
+        width: clamp(80px, 25vw, 120px);
+    }
+
+    .login-btn {
+        padding: 0.8rem;
+        font-size: 1rem;
+    }
+}
+
+@media (max-width: 350px) {
+    .login-box {
+        padding: 1rem;
+    }
+
+    .input-group input {
+        padding: 0.7rem;
+        font-size: 0.9rem;
     }
 }
 
