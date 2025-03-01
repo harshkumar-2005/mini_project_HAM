@@ -6,6 +6,7 @@ from flask_jwt_extended import JWTManager
 from flask_cors import CORS
 from routes import routes_bp
 from models import db
+from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, exceptions
 
 # Initialize Flask App
 app = Flask(__name__, static_folder="static")  # Adjusted for Vanilla JS frontend
@@ -41,6 +42,31 @@ def serve_index():
 def health_check():
     return jsonify({"status": "OK"}), 200
 
+
+@app.errorhandler(exceptions.NoAuthorizationError)
+def handle_auth_error(e):
+    print("🚨 JWT Authorization Error:", str(e))
+    return jsonify({"error": "Missing or invalid JWT token"}), 401
+
+@app.errorhandler(exceptions.JWTDecodeError)
+def handle_jwt_decode_error(e):
+    print("🚨 JWT Decode Error:", str(e))
+    return jsonify({"error": "Invalid JWT format"}), 401
+
+
+
+@app.before_request
+def log_jwt():
+    try:
+        verify_jwt_in_request()
+        print("✅ JWT Verified:", get_jwt_identity())  # Debugging
+    except exceptions.NoAuthorizationError as e:
+        print("🚨 JWT Authorization Error:", str(e))
+    except exceptions.JWTDecodeError as e:
+        print("🚨 JWT Decode Error:", str(e))
+
+
+
 # Run Flask App
 if __name__ == "__main__":
-    app.run(debug=True, host="0.0.0.0", port=5000, threaded=False)
+    app.run(debug=False, host="0.0.0.0", port=5000, threaded=False)

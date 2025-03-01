@@ -89,12 +89,43 @@ def add_course():
 @routes_bp.route('/enroll', methods=['POST'])
 @jwt_required()
 def enroll():
-    student_id = get_jwt_identity()["id"]  # FIX: Get ID from JWT
+    student = get_jwt_identity()
+    student_id = student.get("id")
+
+    if student_id is None:
+        return jsonify({"error": "Invalid JWT: No student ID found"}), 401
+
+    print("\n===== /enroll REQUEST RECEIVED =====")  # Debugging
+    print("Received Headers:", request.headers)
+    print("Content-Type:", request.content_type)
+    print("Raw Data:", request.data.decode('utf-8'))  # Debugging
+    print("JSON Data:", request.get_json(silent=True))  # Debugging
 
     if not request.is_json:
+        print("❌ ERROR: Request is not JSON!")
         return jsonify({"error": "Missing JSON in request"}), 400
 
-    course_id = request.json.get('course_id')
+    data = request.get_json()
+    if data is None:
+        print("❌ ERROR: request.get_json() returned None!")
+        return jsonify({"error": "Invalid JSON format"}), 400
 
+    course_id = data.get("course_id")
     if not course_id:
+        print("❌ ERROR: course_id is missing!")
         return jsonify({"error": "course_id is required"}), 400
+
+    print("✅ SUCCESS: Received course_id:", course_id)
+    return jsonify({"message": "Enrollment processing!"}), 200
+
+
+@routes_bp.route('/debug', methods=['POST'])
+def debug_test():
+    print("\n===== DEBUG TEST ROUTE RECEIVED =====")
+    print("Received Headers:", request.headers)
+    print("Content-Type:", request.content_type)
+    print("Raw Data:", request.data.decode('utf-8'))
+    print("JSON Data:", request.get_json(silent=True))
+    
+    return jsonify({"message": "Debugging successful!"}), 200
+
