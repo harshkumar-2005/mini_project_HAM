@@ -1,4 +1,5 @@
 import os
+from datetime import timedelta
 from flask import Flask, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
@@ -9,15 +10,16 @@ from models import db
 from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, exceptions
 
 # Initialize Flask App
-app = Flask(__name__, static_folder="static")  # Adjusted for Vanilla JS frontend
+app = Flask(__name__, static_folder="static")
 
-# Enable CORS for specific frontend origins
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})  # Adjust frontend port if needed
+# Enable CORS for frontend
+CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
 
 # Database Configuration
-app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your_secret_key")  # Change in production
+app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your_secret_key")
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:%40Harsh1243@localhost/student_registration_db'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)  # Set token expiry
 
 # Initialize Extensions
 db.init_app(app)
@@ -36,36 +38,10 @@ with app.app_context():
 def serve_index():
     return send_from_directory("static", "index.html")
 
-
 # Health Check Route
 @app.route("/health")
 def health_check():
     return jsonify({"status": "OK"}), 200
-
-
-@app.errorhandler(exceptions.NoAuthorizationError)
-def handle_auth_error(e):
-    print("🚨 JWT Authorization Error:", str(e))
-    return jsonify({"error": "Missing or invalid JWT token"}), 401
-
-@app.errorhandler(exceptions.JWTDecodeError)
-def handle_jwt_decode_error(e):
-    print("🚨 JWT Decode Error:", str(e))
-    return jsonify({"error": "Invalid JWT format"}), 401
-
-
-
-@app.before_request
-def log_jwt():
-    try:
-        verify_jwt_in_request()
-        print("✅ JWT Verified:", get_jwt_identity())  # Debugging
-    except exceptions.NoAuthorizationError as e:
-        print("🚨 JWT Authorization Error:", str(e))
-    except exceptions.JWTDecodeError as e:
-        print("🚨 JWT Decode Error:", str(e))
-
-
 
 # Run Flask App
 if __name__ == "__main__":

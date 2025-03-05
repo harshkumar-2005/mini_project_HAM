@@ -2,6 +2,7 @@ from app import app, db
 from models import User, Course
 from werkzeug.security import generate_password_hash
 
+
 def setup_database():
     with app.app_context():
         # Create tables if they don't exist

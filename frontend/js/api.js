@@ -10,21 +10,17 @@ async function apiRequest(endpoint, options = {}) {
     try {
         const response = await fetch(`${API_BASE_URL}${endpoint}`, {
             ...options,
-            headers: {
-                ...defaultHeaders,
-                ...options.headers
-            }
+            headers: { ...defaultHeaders, ...options.headers }
         });
 
-        const data = await response.json();
-        
         if (!response.ok) {
-            throw new Error(data.error || `API Error: ${response.statusText}`);
+            const errorData = await response.json();
+            throw new Error(errorData.error || "API request failed");
         }
 
-        return data;
+        return response.json();
     } catch (error) {
-        console.error('API Request failed:', error);
+        console.error("API Error:", error.message);
         throw error;
     }
 }
@@ -36,25 +32,5 @@ const api = {
             body: JSON.stringify({ email, password })
         }),
     
-    enrollCourse: (courseId) =>
-        apiRequest('/enroll', {
-            method: 'POST',
-            body: JSON.stringify({ course_id: courseId })
-        }),
-    
-    bulkEnroll: (courseIds) =>
-        apiRequest('/bulk-enroll', {
-            method: 'POST',
-            body: JSON.stringify({ course_ids: courseIds })
-        }),
-    
-    getCourses: () =>
-        apiRequest('/courses', {
-            method: 'GET'
-        }),
-    
-    getEnrollments: () =>
-        apiRequest('/student/enrollments', {
-            method: 'GET'
-        })
-}; 
+    getCourses: () => apiRequest('/courses', { method: 'GET' })
+};
