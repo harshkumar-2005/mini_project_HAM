@@ -1,48 +1,62 @@
-function checkAuth() {
-    const token = localStorage.getItem('token');
-    if (!token) {
-        window.location.href = '/login.html';
+import api from "./api.js";
+import { checkAuth, logout } from "./auth.js";
+
+document.addEventListener("DOMContentLoaded", async () => {
+    await checkAuth();
+    const userRole = localStorage.getItem("userRole");
+
+    if (userRole !== "student") {
+        alert("Unauthorized Access");
+        window.location.href = "/index.html";
         return;
     }
 
-    // Validate token by calling a protected route
-    api.getCourses()
-        .then(() => {
-            console.log('Token is valid');
-        })
-        .catch(() => {
-            console.warn('Invalid or expired token. Redirecting to login...');
-            localStorage.removeItem('token');
-            window.location.href = '/login.html';
-        });
-}
+    loadCourses();
 
-function logout() {
-    localStorage.removeItem('token');
-    window.location.href = '/login.html';
-}
-
-document.addEventListener('DOMContentLoaded', () => {
-    const loginForm = document.getElementById('loginForm');
-    const logoutBtn = document.getElementById('logoutBtn');
-
-    if (loginForm) {
-        loginForm.addEventListener('submit', async (e) => {
-            e.preventDefault();
-            const email = document.getElementById('email').value;
-            const password = document.getElementById('password').value;
-
-            try {
-                const response = await api.login(email, password);
-                localStorage.setItem('token', response.token);
-                window.location.href = response.role === 'admin' ? '/admin.html' : '/student.html';
-            } catch (error) {
-                alert('Login failed: ' + error.message);
-            }
-        });
-    }
-
-    if (logoutBtn) {
-        logoutBtn.addEventListener('click', logout);
-    }
+    document.getElementById("logoutBtn").addEventListener("click", logout);
 });
+
+async function loadCourses() {
+    try {
+        const courses = await api.getCourses();
+        const coursesList = document.getElementById("coursesList");
+
+        if (!courses.length) {
+            coursesList.innerHTML = '<div class="empty-state">No courses available</div>';
+            return;
+        }
+
+        coursesList.innerHTML = courses.map(course => `
+            <div class="course-card">
+                <h3>${course.name}</h3>
+                <p>${course.description || "No description available"}</p>
+                <button class="enroll-btn" data-course-id="${course.id}">Enroll</button>
+            </div>
+        `).join("");
+
+        document.querySelectorAll(".enroll-btn").forEach(button => {
+            button.addEventListener("click", () => enrollCourse(button.dataset.courseId));
+        });
+    } catch (error) {
+        console.error("Error loading courses:", error);
+        showError("Failed to load courses");
+    }
+}
+
+async function enrollCourse(courseId) {
+    try {
+        await api.enrollCourse(courseId);
+        showSuccess("Enrolled successfully!");
+    } catch (error) {
+        console.error("Error enrolling in course:", error);
+        showError(error.message || "Failed to enroll in course");
+    }
+}
+
+function showError(message) {
+    alert(message);
+}
+
+function showSuccess(message) {
+    alert(message);
+}

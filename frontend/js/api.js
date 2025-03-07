@@ -1,10 +1,10 @@
-const API_BASE_URL = 'http://localhost:5000';
+const API_BASE_URL = "http://127.0.0.1:5000";
 
 async function apiRequest(endpoint, options = {}) {
-    const token = localStorage.getItem('token');
+    const token = localStorage.getItem("token");
     const defaultHeaders = {
-        'Content-Type': 'application/json',
-        ...(token && { 'Authorization': `Bearer ${token}` })
+        "Content-Type": "application/json",
+        ...(token && { "Authorization": `Bearer ${token}` })
     };
 
     try {
@@ -26,11 +26,22 @@ async function apiRequest(endpoint, options = {}) {
 }
 
 const api = {
-    login: (email, password) => 
-        apiRequest('/auth/login', {
-            method: 'POST',
-            body: JSON.stringify({ email, password })
-        }),
-    
-    getCourses: () => apiRequest('/courses', { method: 'GET' })
+    login: (email, password) => apiRequest("/auth/login", {
+        method: "POST",
+        body: JSON.stringify({ email, password })
+    }),
+
+    getCourses: () => apiRequest("/courses", { method: "GET" }),
+
+    addCourse: (name, description, prerequisiteId) => apiRequest("/add_course", {
+        method: "POST",
+        body: JSON.stringify({ name, description, prerequisite_id: prerequisiteId })
+    }),
+
+    enrollCourse: (courseId) => apiRequest("/enroll", {
+        method: "POST",
+        body: JSON.stringify({ course_id: courseId })
+    })
 };
+
+export default api;

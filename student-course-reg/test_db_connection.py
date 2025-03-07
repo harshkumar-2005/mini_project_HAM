@@ -7,7 +7,7 @@ def test_db_connection():
             host="localhost",
             user="root",
             password="@Harsh1243",
-            database="student_course_reg",
+            database="student_registration_db",
             autocommit=True
         )
         print("✅ Database connection successful!")

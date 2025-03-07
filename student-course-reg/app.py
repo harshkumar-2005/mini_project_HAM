@@ -3,23 +3,34 @@ from datetime import timedelta
 from flask import Flask, send_from_directory, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
+from flask_jwt_extended import JWTManager, create_access_token, jwt_required, get_jwt_identity
 from flask_cors import CORS
 from routes import routes_bp
 from models import db
-from flask_jwt_extended import verify_jwt_in_request, get_jwt_identity, exceptions
+from flask import Flask, send_from_directory
+
+app = Flask(__name__, static_folder="static")
+
+@app.route("/")
+def serve_index():
+    return send_from_directory("static", "index.html")
+
+@app.route("/<path:filename>")
+def serve_static(filename):
+    return send_from_directory("static", filename)
+
 
 # Initialize Flask App
 app = Flask(__name__, static_folder="static")
 
-# Enable CORS for frontend
-CORS(app, resources={r"/*": {"origins": "http://127.0.0.1:5500"}})
+# Enable CORS for all origins (Temporary fix)
+CORS(app)
 
 # Database Configuration
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your_secret_key")
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://root:%40Harsh1243@localhost/student_registration_db'
+app.config['SQLALCHEMY_DATABASE_URI'] = "mysql+pymysql://root:%40Harsh1243@localhost/student_registration_db"
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)  # Set token expiry
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=1)
 
 # Initialize Extensions
 db.init_app(app)
@@ -33,12 +44,20 @@ app.register_blueprint(routes_bp)
 with app.app_context():
     db.create_all()
 
-# Serve Vanilla JS Frontend
+# Token Refresh Route
+@app.route("/auth/refresh", methods=["POST"])
+@jwt_required(refresh=True)
+def refresh_token():
+    identity = get_jwt_identity()
+    new_token = create_access_token(identity=identity)
+    return jsonify({"token": new_token}), 200
+
+# Serve Frontend
 @app.route("/")
 def serve_index():
     return send_from_directory("static", "index.html")
 
-# Health Check Route
+# Health Check
 @app.route("/health")
 def health_check():
     return jsonify({"status": "OK"}), 200
