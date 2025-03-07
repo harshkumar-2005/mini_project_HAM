@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - Faculty Management</title>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div id="notification" class="notification"></div>
+    
+    <!-- Admin Navigation -->
+    <nav class="navbar admin-nav">
+        <div class="nav-left">
+            <img src="static/eduPortal.jpeg" alt="Logo" class="nav-logo">
+            <h1>Faculty Management Panel</h1>
+        </div>
+        <div class="nav-right">
+            <span class="admin-name">Welcome, <span id="adminName">Admin</span></span>
+            <button id="logoutBtn" class="btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </nav>
+
+    <!-- Dashboard Content -->
+    <div class="admin-container">
+        <!-- Quick Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-chalkboard-teacher"></i>
+                <div class="stat-info">
+                    <h3>Total Faculty</h3>
+                    <p id="totalFaculty">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-book"></i>
+                <div class="stat-info">
+                    <h3>Courses Assigned</h3>
+                    <p id="assignedCourses">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-clock"></i>
+                <div class="stat-info">
+                    <h3>Active Sessions</h3>
+                    <p id="activeSessions">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-calendar-check"></i>
+                <div class="stat-info">
+                    <h3>Today's Classes</h3>
+                    <p id="todayClasses">0</p>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Tabs -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="faculty">
+                <i class="fas fa-chalkboard-teacher"></i> Faculty List
+            </button>
+            <button class="tab-btn" data-tab="assignments">
+                <i class="fas fa-tasks"></i> Course Assignments
+            </button>
+            <button class="tab-btn" data-tab="schedule">
+                <i class="fas fa-calendar-alt"></i> Schedule
+            </button>
+            <button class="tab-btn" data-tab="reports">
+                <i class="fas fa-chart-bar"></i> Reports
+            </button>
+        </div>
+
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Faculty Tab -->
+            <div id="facultyTab" class="tab-pane active">
+                <div class="action-bar">
+                    <button class="btn add-btn" id="addFacultyBtn">
+                        <i class="fas fa-plus"></i> Add New Faculty
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search faculty...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="facultyTable">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Name</th>
+                                <th>Department</th>
+                                <th>Courses</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Faculty data will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Course Assignments Tab -->
+            <div id="assignmentsTab" class="tab-pane">
+                <div class="action-bar">
+                    <button class="btn add-btn" id="addAssignmentBtn">
+                        <i class="fas fa-plus"></i> New Assignment
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search assignments...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="grid-container assignments-grid" id="assignmentsList">
+                    <!-- Course assignments will be dynamically added here -->
+                </div>
+            </div>
+
+            <!-- Schedule Tab -->
+            <div id="scheduleTab" class="tab-pane">
+                <div class="calendar-container">
+                    <div class="calendar-header">
+                        <button class="btn" id="prevWeek"><i class="fas fa-chevron-left"></i></button>
+                        <h3 id="currentWeek">Current Week</h3>
+                        <button class="btn" id="nextWeek"><i class="fas fa-chevron-right"></i></button>
+                    </div>
+                    <div class="schedule-grid" id="scheduleGrid">
+                        <!-- Schedule will be dynamically added here -->
+                    </div>
+                </div>
+            </div>
+
+            <!-- Reports Tab -->
+            <div id="reportsTab" class="tab-pane">
+                <div class="reports-container">
+                    <div class="report-card">
+                        <h3>Faculty Performance</h3>
+                        <div class="chart-container" id="performanceChart">
+                            <!-- Chart will be added here -->
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Course Distribution</h3>
+                        <div class="chart-container" id="distributionChart">
+                            <!-- Chart will be added here -->
+                        </div>
+                    </div>
+                    <div class="report-card">
+                        <h3>Attendance Overview</h3>
+                        <div class="chart-container" id="attendanceChart">
+                            <!-- Chart will be added here -->
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Faculty Modal -->
+    <div class="modal" id="addFacultyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add New Faculty</h2>
+                <button class="close-btn"><i class="fas fa-times"></i></button>
+            </div>
+            <form id="addFacultyForm">
+                <div class="input-group">
+                    <input type="text" id="facultyName" placeholder="Full Name" required>
+                </div>
+                <div class="input-group">
+                    <input type="email" id="facultyEmail" placeholder="Email" required>
+                </div>
+                <div class="input-group">
+                    <select id="facultyDepartment" required>
+                        <option value="">Select Department</option>
+                        <option value="cs">Computer Science</option>
+                        <option value="eng">Engineering</option>
+                        <option value="math">Mathematics</option>
+                        <!-- Add more departments as needed -->
+                    </select>
+                </div>
+                <div class="input-group">
+                    <input type="text" id="facultySpecialization" placeholder="Specialization">
+                </div>
+                <button type="submit" class="btn">Add Faculty</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabPanes.forEach(p => p.classList.remove('active'));
+                    
+                    btn.classList.add('active');
+                    document.getElementById(`${btn.dataset.tab}Tab`).classList.add('active');
+                });
+            });
+
+            // Modal functionality
+            const addFacultyBtn = document.getElementById('addFacultyBtn');
+            const addFacultyModal = document.getElementById('addFacultyModal');
+            const closeBtn = document.querySelector('.close-btn');
+
+            addFacultyBtn.addEventListener('click', () => {
+                addFacultyModal.classList.add('show');
+            });
+
+            closeBtn.addEventListener('click', () => {
+                addFacultyModal.classList.remove('show');
+            });
+
+            // Close modal when clicking outside
+            window.addEventListener('click', (e) => {
+                if (e.target === addFacultyModal) {
+                    addFacultyModal.classList.remove('show');
+                }
+            });
+        });
+    </script>
+</body>
+</html> 

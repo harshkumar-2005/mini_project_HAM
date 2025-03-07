@@ -4,38 +4,170 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Dashboard</title>
-    <link rel="stylesheet" href="styles.css">
-    <script src="api.js"></script>
-    <script src="auth.js"></script>
-    <script src="admin.js" defer></script>
+    <link rel="stylesheet" href="css/styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
 </head>
 <body>
-    <header>
-        <h1>Admin Dashboard</h1>
-        <button id="logoutBtn" class="btn logout">Logout</button>
-    </header>
+    <div id="notification" class="notification"></div>
+    
+    <!-- Admin Navigation -->
+    <nav class="navbar admin-nav">
+        <div class="nav-left">
+            <img src="assets/logo.png" alt="Logo" class="nav-logo">
+            <h1>Admin Dashboard</h1>
+        </div>
+        <div class="nav-right">
+            <span class="admin-name">Welcome, <span id="adminName">Admin</span></span>
+            <button id="logoutBtn" class="btn logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </nav>
 
-    <main>
-        <section id="add-course-section">
-            <h2>Add New Course</h2>
-            <form id="addCourseForm">
-                <input type="text" id="courseName" placeholder="Course Name" required>
-                <input type="text" id="courseDescription" placeholder="Course Description">
-                <input type="number" id="prerequisiteId" placeholder="Prerequisite Course ID (Optional)">
-                <button type="submit" class="btn">Add Course</button>
-            </form>
-        </section>
+    <!-- Dashboard Content -->
+    <div class="admin-container">
+        <!-- Quick Stats Cards -->
+        <div class="stats-container">
+            <div class="stat-card">
+                <i class="fas fa-users"></i>
+                <div class="stat-info">
+                    <h3>Total Students</h3>
+                    <p id="totalStudents">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-book"></i>
+                <div class="stat-info">
+                    <h3>Total Courses</h3>
+                    <p id="totalCourses">0</p>
+                </div>
+            </div>
+            <div class="stat-card">
+                <i class="fas fa-user-graduate"></i>
+                <div class="stat-info">
+                    <h3>Active Enrollments</h3>
+                    <p id="totalEnrollments">0</p>
+                </div>
+            </div>
+        </div>
 
-        <section id="courses-section">
-            <h2>Available Courses</h2>
-            <div id="coursesList"></div>
-        </section>
+        <!-- Main Content Tabs -->
+        <div class="admin-tabs">
+            <button class="tab-btn active" data-tab="courses">
+                <i class="fas fa-book"></i> Courses
+            </button>
+            <button class="tab-btn" data-tab="students">
+                <i class="fas fa-users"></i> Students
+            </button>
+            <button class="tab-btn" data-tab="enrollments">
+                <i class="fas fa-user-graduate"></i> Enrollments
+            </button>
+        </div>
 
-        <div id="notification" class="notification"></div>
-    </main>
+        <!-- Tab Content -->
+        <div class="tab-content">
+            <!-- Courses Tab -->
+            <div id="coursesTab" class="tab-pane active">
+                <div class="action-bar">
+                    <button class="btn add-btn" id="addCourseBtn">
+                        <i class="fas fa-plus"></i> Add New Course
+                    </button>
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search courses...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="grid-container courses-grid" id="coursesList">
+                    <!-- Courses will be dynamically added here -->
+                </div>
+            </div>
 
+            <!-- Students Tab -->
+            <div id="studentsTab" class="tab-pane">
+                <div class="action-bar">
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search students...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="studentsTable">
+                        <thead>
+                            <tr>
+                                <th>Student ID</th>
+                                <th>Name</th>
+                                <th>Email</th>
+                                <th>Enrolled Courses</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Students will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Enrollments Tab -->
+            <div id="enrollmentsTab" class="tab-pane">
+                <div class="action-bar">
+                    <div class="search-bar">
+                        <input type="text" placeholder="Search enrollments...">
+                        <i class="fas fa-search"></i>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table class="data-table" id="enrollmentsTable">
+                        <thead>
+                            <tr>
+                                <th>Student</th>
+                                <th>Course</th>
+                                <th>Enrollment Date</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <!-- Enrollments will be dynamically added here -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="js/api.js"></script>
+    <script src="js/auth.js"></script>
+    <script src="js/admin.js"></script>
     <script>
-        checkAuth();  // Ensure only authenticated users can access
+        document.addEventListener('DOMContentLoaded', function() {
+            // Tab switching functionality
+            const tabBtns = document.querySelectorAll('.tab-btn');
+            const tabPanes = document.querySelectorAll('.tab-pane');
+
+            tabBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    // Remove active class from all buttons and panes
+                    tabBtns.forEach(b => b.classList.remove('active'));
+                    tabPanes.forEach(p => p.classList.remove('active'));
+
+                    // Add active class to clicked button and corresponding pane
+                    btn.classList.add('active');
+                    document.getElementById(`${btn.dataset.tab}Tab`).classList.add('active');
+                });
+            });
+
+            // Add hover effect to table rows
+            document.querySelectorAll('.data-table tbody tr').forEach(row => {
+                row.addEventListener('mouseenter', () => {
+                    row.classList.add('hover');
+                });
+                row.addEventListener('mouseleave', () => {
+                    row.classList.remove('hover');
+                });
+            });
+        });
     </script>
 </body>
 </html>
