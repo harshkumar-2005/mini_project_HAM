@@ -1,118 +1,89 @@
 from flask import Blueprint, request, jsonify
 from models import db, User, Course, Enrollment
-from flask_jwt_extended import create_access_token, jwt_required, get_jwt_identity
+from flask_jwt_extended import (create_access_token, jwt_required, get_jwt_identity, 
+                                create_refresh_token, jwt_refresh_token_required)
 from werkzeug.security import check_password_hash, generate_password_hash
 
 routes_bp = Blueprint("routes_bp", __name__)
 
+# Standardized response format
+def response(success, message, data=None):
+    return jsonify({"success": success, "message": message, "data": data}), 200 if success else 400
+
+# Home Route
 @routes_bp.route("/")
 def home():
-    return jsonify({"message": "Welcome to the Student Course Registration System!"})
+    return response(True, "Welcome to the Student Course Registration System!")
 
+# User Login
 @routes_bp.route("/auth/login", methods=["POST"])
 def login():
     data = request.get_json()
-    email = data.get("email")
-    password = data.get("password")
+    if not data or "email" not in data or "password" not in data:
+        return response(False, "Missing email or password")
+    
+    user = User.query.filter_by(email=data["email"]).first()
+    if not user or not check_password_hash(user.password, data["password"]):
+        return response(False, "Invalid credentials")
+    
+    access_token = create_access_token(identity=user.id)
+    refresh_token = create_refresh_token(identity=user.id)
+    return response(True, "Login successful", {"access_token": access_token, "refresh_token": refresh_token})
 
-    user = User.query.filter_by(email=email).first()
-    if user and check_password_hash(user.password, password):
-        access_token = create_access_token(identity={"id": user.id, "role": user.role})
-        return jsonify({
-            "token": access_token,
-            "role": user.role,
-            "user_id": user.id
-        }), 200
-
-    return jsonify({"error": "Invalid credentials"}), 401
-
+# Refresh Token
 @routes_bp.route("/auth/refresh", methods=["POST"])
-@jwt_required(refresh=True)
-def refresh_token():
-    identity = get_jwt_identity()
-    new_token = create_access_token(identity=identity)
-    return jsonify({"token": new_token}), 200
+@jwt_refresh_token_required
+def refresh():
+    current_user = get_jwt_identity()
+    new_access_token = create_access_token(identity=current_user)
+    return response(True, "Token refreshed", {"access_token": new_access_token})
 
+# Register User
+@routes_bp.route("/auth/register", methods=["POST"])
+def register():
+    data = request.get_json()
+    if not data or "email" not in data or "password" not in data:
+        return response(False, "Missing email or password")
+    
+    if User.query.filter_by(email=data["email"]).first():
+        return response(False, "User already exists")
+    
+    hashed_password = generate_password_hash(data["password"])
+    new_user = User(email=data["email"], password=hashed_password)
+    db.session.add(new_user)
+    db.session.commit()
+    return response(True, "User registered successfully")
+
+# Get Courses
 @routes_bp.route("/courses", methods=["GET"])
 @jwt_required()
 def get_courses():
     courses = Course.query.all()
-    return jsonify([
-        {"id": course.id, "name": course.name, "description": course.description, "prerequisite_id": course.prerequisite_id}
-        for course in courses
-    ]), 200
+    return response(True, "Courses fetched", [course.serialize() for course in courses])
 
-@routes_bp.route("/add_course", methods=["POST"])
-@jwt_required()
-def add_course():
-    user = get_jwt_identity()
-    if user["role"] != "admin":
-        return jsonify({"error": "Unauthorized"}), 403
-
-    data = request.get_json()
-    name = data.get("name")
-    description = data.get("description")
-    prerequisite_id = data.get("prerequisite_id")
-
-    if not name:
-        return jsonify({"error": "Course name is required"}), 400
-
-    new_course = Course(name=name, description=description, prerequisite_id=prerequisite_id)
-    db.session.add(new_course)
-    db.session.commit()
-
-    return jsonify({"message": "Course added successfully!"}), 201
-
-@routes_bp.route("/students", methods=["GET"])
-@jwt_required()
-def get_students():
-    students = User.query.filter_by(role='student').all()
-    return jsonify([{ 'id': s.id, 'name': s.name, 'email': s.email } for s in students]), 200
-
-@routes_bp.route("/add_student", methods=["POST"])
-@jwt_required()
-def add_student():
-    user = get_jwt_identity()
-    if user["role"] != "admin":
-        return jsonify({"error": "Unauthorized"}), 403
-
-    data = request.get_json()
-    name = data.get("name")
-    email = data.get("email")
-    password = data.get("password")
-
-    if not all([name, email, password]):
-        return jsonify({"error": "All fields are required"}), 400
-
-    hashed_password = generate_password_hash(password)
-    new_student = User(name=name, email=email, password=hashed_password, role="student")
-
-    db.session.add(new_student)
-    db.session.commit()
-
-    return jsonify({"message": "Student added successfully!"}), 201
-
-
+# Enroll in a Course
 @routes_bp.route("/enroll", methods=["POST"])
 @jwt_required()
-def enroll():
-    student = get_jwt_identity()
-    student_id = student.get("id")
-    if student_id is None:
-        return jsonify({"error": "Invalid JWT: No student ID found"}), 401
-
+def enroll_course():
+    user_id = get_jwt_identity()
     data = request.get_json()
-    course_id = data.get("course_id")
+    if not data or "course_id" not in data:
+        return response(False, "Missing course ID")
     
-    if not course_id:
-        return jsonify({"error": "Course ID is required"}), 400
-
-    existing_enrollment = Enrollment.query.filter_by(user_id=student_id, course_id=course_id).first()
+    course = Course.query.get(data["course_id"])
+    if not course:
+        return response(False, "Course not found")
+    
+    existing_enrollment = Enrollment.query.filter_by(user_id=user_id, course_id=course.id).first()
     if existing_enrollment:
-        return jsonify({"error": "Already enrolled in this course"}), 400
+        return response(False, "Already enrolled in this course")
     
-    new_enrollment = Enrollment(user_id=student_id, course_id=course_id)
-    db.session.add(new_enrollment)
+    enrollment = Enrollment(user_id=user_id, course_id=course.id)
+    db.session.add(enrollment)
     db.session.commit()
+    return response(True, "Enrollment successful")
 
-    return jsonify({"message": "Enrollment successful!"}), 201
+# Global Error Handling
+@routes_bp.errorhandler(Exception)
+def handle_exception(e):
+    return response(False, "An error occurred: " + str(e))

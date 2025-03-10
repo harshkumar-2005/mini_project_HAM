@@ -7,24 +7,12 @@ from flask_jwt_extended import JWTManager, create_access_token, jwt_required, ge
 from flask_cors import CORS
 from routes import routes_bp
 from models import db
-from flask import Flask, send_from_directory
-
-app = Flask(__name__, static_folder="static")
-
-@app.route("/")
-def serve_index():
-    return send_from_directory("static", "index.html")
-
-@app.route("/<path:filename>")
-def serve_static(filename):
-    return send_from_directory("static", filename)
-
 
 # Initialize Flask App
 app = Flask(__name__, static_folder="static")
 
-# Enable CORS for all origins (Temporary fix)
-CORS(app)
+# Enable CORS (Restricting to frontend domain for security)
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})  # Change this to your frontend URL
 
 # Database Configuration
 app.config["JWT_SECRET_KEY"] = os.getenv("JWT_SECRET_KEY", "your_secret_key")
@@ -52,12 +40,16 @@ def refresh_token():
     new_token = create_access_token(identity=identity)
     return jsonify({"token": new_token}), 200
 
-# Serve Frontend
+# Serve Frontend Static Files
 @app.route("/")
 def serve_index():
     return send_from_directory("static", "index.html")
 
-# Health Check
+@app.route("/<path:filename>")
+def serve_static(filename):
+    return send_from_directory("static", filename)
+
+# Health Check Route
 @app.route("/health")
 def health_check():
     return jsonify({"status": "OK"}), 200
