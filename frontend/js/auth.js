@@ -19,6 +19,26 @@ function logout() {
     window.location.href = "/login.html";
 }
 
+async function refreshAuthToken() {
+    try {
+        const response = await fetch("http://127.0.0.1:5000/auth/refresh", {
+            method: "POST",
+            headers: {
+                "Authorization": `Bearer ${localStorage.getItem("token")}`
+            }
+        });
+        if (response.ok) {
+            const data = await response.json();
+            localStorage.setItem("token", data.token);
+        } else {
+            logout();
+        }
+    } catch (error) {
+        logout();
+    }
+}
+
+
 document.addEventListener("DOMContentLoaded", () => {
     const loginForm = document.getElementById("loginForm");
     if (loginForm) {

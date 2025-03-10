@@ -32,6 +32,12 @@ body {
     width: 100%;
 }
 
+.hero {
+    background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+    animation: gradientAnimation 10s ease infinite;
+}
+
+
 .btn {
     display: inline-block;
     padding: 0.8rem 1.5rem;
@@ -1558,4 +1564,9 @@ body {
         width: 32px;
         height: 32px;
     }
-}
+    @keyframes gradientAnimation {
+        0% { background-position: 0% 50%; }
+        50% { background-position: 100% 50%; }
+        100% { background-position: 0% 50%; }
+    }
+    }

@@ -69,6 +69,30 @@ def get_students():
     students = User.query.filter_by(role='student').all()
     return jsonify([{ 'id': s.id, 'name': s.name, 'email': s.email } for s in students]), 200
 
+@routes_bp.route("/add_student", methods=["POST"])
+@jwt_required()
+def add_student():
+    user = get_jwt_identity()
+    if user["role"] != "admin":
+        return jsonify({"error": "Unauthorized"}), 403
+
+    data = request.get_json()
+    name = data.get("name")
+    email = data.get("email")
+    password = data.get("password")
+
+    if not all([name, email, password]):
+        return jsonify({"error": "All fields are required"}), 400
+
+    hashed_password = generate_password_hash(password)
+    new_student = User(name=name, email=email, password=hashed_password, role="student")
+
+    db.session.add(new_student)
+    db.session.commit()
+
+    return jsonify({"message": "Student added successfully!"}), 201
+
+
 @routes_bp.route("/enroll", methods=["POST"])
 @jwt_required()
 def enroll():
