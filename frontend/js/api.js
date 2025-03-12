@@ -33,15 +33,16 @@ const api = {
 
     getCourses: () => apiRequest("/courses", { method: "GET" }),
 
-    addCourse: (name, description, prerequisiteId) => apiRequest("/add_course", {
+    addCourse: (name, description, prerequisiteId) => apiRequest("/courses/add", {
         method: "POST",
         body: JSON.stringify({ name, description, prerequisite_id: prerequisiteId })
-    }),
+    }),    
 
-    enrollCourse: (courseId) => apiRequest("/enroll", {
+    enrollCourse: (courseId) => apiRequest("/courses/enroll", {
         method: "POST",
         body: JSON.stringify({ course_id: courseId })
-    })
+    }),
+    
 };
 
 export default api;
